@@ -24,7 +24,7 @@
 #define ICMP_DEST_UNREACH	3	/* Destination Unreachable	*/
 #define ICMP_SOURCE_QUENCH	4	/* Source Quench		*/
 #define ICMP_REDIRECT		5	/* Redirect (change route)	*/
-#define ICMP_ECHO		8	/* Echo Request			*/
+#define ICMP_ECHO	        8	/* Echo Request			*/
 #define ICMP_TIME_EXCEEDED	11	/* Time Exceeded		*/
 #define ICMP_PARAMETERPROB	12	/* Parameter Problem		*/
 #define ICMP_TIMESTAMP		13	/* Timestamp Request		*/
@@ -33,7 +33,8 @@
 #define ICMP_INFO_REPLY		16	/* Information Reply		*/
 #define ICMP_ADDRESS		17	/* Address Mask Request		*/
 #define ICMP_ADDRESSREPLY	18	/* Address Mask Reply		*/
-#define NR_ICMP_TYPES		18
+#define ICMP_PKT_REASM		253 /* Report Packet Reassembly */
+#define NR_ICMP_TYPES		253
 
 
 /* Codes for UNREACH. */
@@ -64,6 +65,10 @@
 /* Codes for TIME_EXCEEDED. */
 #define ICMP_EXC_TTL		0	/* TTL count exceeded		*/
 #define ICMP_EXC_FRAGTIME	1	/* Fragment Reass time exceeded	*/
+
+/* Codes for PKT_REASM. */
+#define ICMP_REASM_SUCC		0	/* Reassembly successful	*/
+#define ICMP_REASM_ERR		1	/* Reassembly error			*/
 
 
 struct icmphdr {
