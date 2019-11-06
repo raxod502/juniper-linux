@@ -401,11 +401,13 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 {
 	struct net *net = container_of(qp->q.net, struct net, ipv4.frags);
 	struct iphdr *iph;
+	struct sk_buff *first_frag;
 	void *reasm_data;
 	int len, err;
 	u8 ecn;
 
 	printk("REASSEMBLING PACKET");
+	// icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);
 
 	ipq_kill(qp);
 
@@ -417,6 +419,23 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 
 	/* Make the one we just received the head. */
 	reasm_data = inet_frag_reasm_prepare(&qp->q, skb, prev_tail);
+
+
+
+	first_frag = skb_rb_first(&qp->q.rb_fragments);
+	first_frag->dev = dev_get_by_index_rcu(net, qp->iif);
+	/* skb has no dst, perform route lookup again */
+	// NOTE: CAN WE JUST ADD ROUTING INFO FOR THE REASSEMBLED PACKET?
+	// NOTE: MAKE SURE WE DIDN'T SCREW UP THE REASSEMBLY PROCESS BECAUSE 
+	// skb::dev is unionized with skb::rbnode, which is presumably needed
+	// for the reassembly process
+	iph = ip_hdr(first_frag);
+	err = ip_route_input_noref(first_frag, iph->daddr, iph->saddr,
+					   iph->tos, first_frag->dev);
+	icmp_send(first_frag, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);
+
+
+	
 	if (!reasm_data)
 		goto out_nomem;
 
@@ -451,7 +470,6 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 
 	ip_send_check(iph);
 	printk("ICMP_SEND: SUCCESS");
-	icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);
 	// icmp_send(skb, ICMP_PKT_REASM, ICMP_REASM_SUCC, htons(IPCB(skb)->frag_max_size));
 
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMOKS);
@@ -469,7 +487,7 @@ out_oversize:
 out_fail:
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMFAILS);
 	printk("ICMP_SEND: FAILURE");
-	icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);
+	icmp_send(inet_frag_pull_head(&qp->q), ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);
 	// icmp_send(skb, ICMP_PKT_REASM, ICMP_REASM_ERR, htons(IPCB(skb)->frag_max_size));
 	return err;
 }
