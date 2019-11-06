@@ -450,7 +450,9 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	}
 
 	ip_send_check(iph);
-	icmp_send(skb, ICMP_PKT_REASM, ICMP_REASM_SUCC, htons(IPCB(skb)->frag_max_size))
+	printk("ICMP_SEND: SUCCESS");
+	icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);
+	// icmp_send(skb, ICMP_PKT_REASM, ICMP_REASM_SUCC, htons(IPCB(skb)->frag_max_size));
 
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMOKS);
 	qp->q.rb_fragments = RB_ROOT;
@@ -466,7 +468,9 @@ out_oversize:
 	net_info_ratelimited("Oversized IP packet from %pI4\n", &qp->q.key.v4.saddr);
 out_fail:
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMFAILS);
-	icmp_send(skb, ICMP_PKT_REASM, ICMP_REASM_ERR, htons(IPCB(skb)->frag_max_size))
+	printk("ICMP_SEND: FAILURE");
+	icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);
+	// icmp_send(skb, ICMP_PKT_REASM, ICMP_REASM_ERR, htons(IPCB(skb)->frag_max_size));
 	return err;
 }
 

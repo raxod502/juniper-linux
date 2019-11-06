@@ -579,9 +579,13 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	u32 mark;
 	struct net *net;
 	struct sock *sk;
-
+	printk("ICMP DEBUG TYPLE CODE   %d, %d", type, code);
+	if(type == 11 && code == 1) printk("__icmp send, debug before rt");
+	// JUNIPER DEBUG: We get the error here
+	// Apaprently skb_in is supposed to be the packet associated with the error
 	if (!rt)
 		goto out;
+	if(type == 11 && code == 1) printk("__icmp send, debug before dev_net");
 
 	if (rt->dst.dev)
 		net = dev_net(rt->dst.dev);
@@ -595,8 +599,10 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	 *	Check this, icmp_send is called from the most obscure devices
 	 *	sometimes.
 	 */
+	if(type == 11 && code == 1) printk("__icmp send, debug before ip_hdr");
 	iph = ip_hdr(skb_in);
 
+	if(type == 11 && code == 1) printk("__icmp send, debug before bunch of stuff");
 	if ((u8 *)iph < skb_in->head ||
 	    (skb_network_header(skb_in) + sizeof(*iph)) >
 	    skb_tail_pointer(skb_in))
@@ -605,12 +611,14 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	/*
 	 *	No replies to physical multicast/broadcast
 	 */
+	if(type == 11 && code == 1) printk("__icmp send, debug before physical multi broad");
 	if (skb_in->pkt_type != PACKET_HOST)
 		goto out;
 
 	/*
 	 *	Now check at the protocol level
 	 */
+	if(type == 11 && code == 1) printk("__icmp send, debug before protocol level");
 	if (rt->rt_flags & (RTCF_BROADCAST | RTCF_MULTICAST))
 		goto out;
 
@@ -618,12 +626,14 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	 *	Only reply to fragment 0. We byte re-order the constant
 	 *	mask for efficiency.
 	 */
+	if(type == 11 && code == 1) printk("__icmp send, debug before fragment stuff");
 	if (iph->frag_off & htons(IP_OFFSET))
 		goto out;
 
 	/*
 	 *	If we send an ICMP error to an ICMP error a mess would result..
 	 */
+	if(type == 11 && code == 1) printk("__icmp send, debug before error to error");
 	if (icmp_pointers[type].error) {
 		/*
 		 *	We are an error, check if we are replying to an
@@ -652,7 +662,7 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 				goto out;
 		}
 	}
-
+	if(type == 11 && code == 1) printk("__icmp send, debug before disable");
 	/* Needed by both icmp_global_allow and icmp_xmit_lock */
 	local_bh_disable();
 
@@ -660,10 +670,12 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	 * incoming dev is loopback.  If outgoing dev change to not be
 	 * loopback, then peer ratelimit still work (in icmpv4_xrlim_allow)
 	 */
+	if(type == 11 && code == 1) printk("__icmp send, debug before global allow");
 	if (!(skb_in->dev && (skb_in->dev->flags&IFF_LOOPBACK)) &&
 	      !icmpv4_global_allow(net, type, code))
 		goto out_bh_enable;
 
+	if(type == 11 && code == 1) printk("__icmp send, debug before sk");
 	sk = icmp_xmit_lock(net);
 	if (!sk)
 		goto out_bh_enable;
@@ -671,7 +683,7 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	/*
 	 *	Construct source address and options.
 	 */
-
+	if(type == 11 && code == 1) printk("__icmp send, debug before RTCF local?");
 	saddr = iph->daddr;
 	if (!(rt->rt_flags & RTCF_LOCAL)) {
 		struct net_device *dev = NULL;
@@ -688,6 +700,7 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 		rcu_read_unlock();
 	}
 
+	if(type == 11 && code == 1) printk("__icmp send, debug before i have no idea");
 	tos = icmp_pointers[type].error ? ((iph->tos & IPTOS_TOS_MASK) |
 					   IPTOS_PREC_INTERNETCONTROL) :
 					  iph->tos;
@@ -700,7 +713,7 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	/*
 	 *	Prepare data for ICMP header.
 	 */
-
+	if(type == 11 && code == 1) printk("__icmp send, debug before prepare data");
 	icmp_param.data.icmph.type	 = type;
 	icmp_param.data.icmph.code	 = code;
 	icmp_param.data.icmph.un.gateway = info;
@@ -713,17 +726,21 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	ipc.addr = iph->saddr;
 	ipc.opt = &icmp_param.replyopts.opt;
 
+	if(type == 11 && code == 1) printk("__icmp send, debug before route lookup");
 	rt = icmp_route_lookup(net, &fl4, skb_in, iph, saddr, tos, mark,
 			       type, code, &icmp_param);
+
+	if(type == 11 && code == 1) printk("__icmp send, debug before IS_ERR rt");
 	if (IS_ERR(rt))
 		goto out_unlock;
 
 	/* peer icmp_ratelimit */
+	if(type == 11 && code == 1) printk("__icmp send, debug before ratelimit");
 	if (!icmpv4_xrlim_allow(net, rt, &fl4, type, code))
 		goto ende;
 
 	/* RFC says return as much as we can without exceeding 576 bytes. */
-
+	if(type == 11 && code == 1) printk("__icmp send, debug before exceed 576");
 	room = dst_mtu(&rt->dst);
 	if (room > 576)
 		room = 576;
@@ -734,8 +751,9 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	if (icmp_param.data_len > room)
 		icmp_param.data_len = room;
 	icmp_param.head_len = sizeof(struct icmphdr);
-
+	if(type == 11 && code == 1) printk("__icmp send, debug before push_reply");
 	icmp_push_reply(&icmp_param, &fl4, &ipc, &rt);
+	if(type == 11 && code == 1) printk("__icmp send, debug THE END");
 ende:
 	ip_rt_put(rt);
 out_unlock:
