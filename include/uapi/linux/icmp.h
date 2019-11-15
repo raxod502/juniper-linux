@@ -33,8 +33,8 @@
 #define ICMP_INFO_REPLY		16	/* Information Reply		*/
 #define ICMP_ADDRESS		17	/* Address Mask Request		*/
 #define ICMP_ADDRESSREPLY	18	/* Address Mask Reply		*/
-// #define ICMP_PKT_REASM		253 /* Report Packet Reassembly */
-#define NR_ICMP_TYPES		18
+#define ICMP_PKT_REASM		253 /* Report Packet Reassembly */
+#define NR_ICMP_TYPES		253
 
 
 /* Codes for UNREACH. */
@@ -67,8 +67,8 @@
 #define ICMP_EXC_FRAGTIME	1	/* Fragment Reass time exceeded	*/
 
 /* Codes for PKT_REASM. */
-// #define ICMP_REASM_SUCC		0	/* Reassembly successful	*/
-// #define ICMP_REASM_ERR		1	/* Reassembly error			*/
+#define ICMP_REASM_SUCC		0	/* Reassembly successful	*/
+#define ICMP_REASM_ERR		1	/* Reassembly error			*/
 
 
 struct icmphdr {
@@ -85,6 +85,11 @@ struct icmphdr {
 		__be16	__unused;
 		__be16	mtu;
 	} frag;
+	struct {
+		__u8	__unused;
+		__u8	orig_dg_len;
+		__be16	mtu;
+	} reasm;
 	__u8	reserved[4];
   } un;
 };
