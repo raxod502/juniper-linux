@@ -852,10 +852,8 @@ static bool icmp_unreach(struct sk_buff *skb)
 		break;
 	case ICMP_PKT_REASM:
 		printk("RECEIVE ICMP_PKT_REASM");
-		printk("MTU %d\n", (icmph->un.reasm.mtu));
-		printk("NTOHS MTU %d\n", ntohs(icmph->un.reasm.mtu));
+		printk("MTU %d\n", ntohs(icmph->un.reasm.mtu));
 		printk("LEN %d\n", (icmph->un.reasm.orig_dg_len));
-		printk("NTOHS LEN %d\n", ntohs(icmph->un.reasm.orig_dg_len));
 		info = ntohs(icmph->un.reasm.mtu);
 		break;
 	}

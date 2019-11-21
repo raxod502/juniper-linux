@@ -401,7 +401,6 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 {
 	struct net *net = container_of(qp->q.net, struct net, ipv4.frags);
 	struct iphdr *iph;
-	struct sk_buff *first_frag;
 	void *reasm_data;
 	int len, err;
 	u8 ecn;
@@ -419,20 +418,7 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	}
 
 	/* Make the one we just received the head. */
-	reasm_data = inet_frag_reasm_prepare(&qp->q, skb, prev_tail);
-
-
-	first_frag = skb_rb_first(&qp->q.rb_fragments);
-	first_frag->dev = dev_get_by_index_rcu(net, qp->iif);
-	/* skb has no dst, perform route lookup again */
-	// NOTE: CAN WE JUST ADD ROUTING INFO FOR THE REASSEMBLED PACKET?
-	// NOTE: MAKE SURE WE DIDN'T SCREW UP THE REASSEMBLY PROCESS BECAUSE 
-	// skb::dev is unionized with skb::rbnode, which is presumably needed
-	// for the reassembly process
-	iph = ip_hdr(first_frag);
-	err = ip_route_input_noref(first_frag, iph->daddr, iph->saddr,
-					   iph->tos, first_frag->dev);
-	
+	reasm_data = inet_frag_reasm_prepare(&qp->q, skb, prev_tail);	
 	
 	if (!reasm_data)
 		goto out_nomem;
@@ -469,14 +455,16 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	ip_send_check(iph);
 	printk("ICMP_SEND: SUCCESS");
 	printk("MAX FRAG: %d\n", IPCB(skb)->frag_max_size);
-	printk("HTONS MAX FRAG: %d\n", htonl(IPCB(skb)->frag_max_size));
 
-	// Original datagram length in 32-bit words, up to 576 bytes (18 32-bit words)
+	/* Original datagram length in 32-bit words, up to 576 bytes (18 32-bit words) */
 	orig_dg_len = len > 576 ? 18 : (len - 1) / 18 + 1;
 	icmp_info = (orig_dg_len << 16) + IPCB(skb)->frag_max_size;
-	icmp_send(first_frag, ICMP_PKT_REASM, ICMP_REASM_SUCC, htonl(icmp_info));
-	printk("LEN: %d\n", orig_dg_len);
-	printk("HTONS LEN: %d\n", orig_dg_len);
+
+	/* skb has no dst, perform route lookup again */
+	err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
+					   iph->tos, skb->dev);
+
+	icmp_send(skb, ICMP_PKT_REASM, ICMP_REASM_SUCC, htonl(icmp_info));
 
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMOKS);
 	qp->q.rb_fragments = RB_ROOT;
@@ -494,8 +482,8 @@ out_fail:
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMFAILS);
 	printk("ICMP_SEND: FAILURE");
 	// WHAT SHOULD ORIG_DG_LEN BE HERE. WE WEREN'T ABLE TO REASSEMBLE???
-	// ALSO, first_frag MAY BE UNINITIALIZED AND IPCB(skb)->frag_max_size MIGHT NOT BE SET
-	icmp_send(first_frag, ICMP_PKT_REASM, ICMP_REASM_ERR, htonl(IPCB(skb)->frag_max_size));
+	// first_frag MAY BE UNINITIALIZED AND IPCB(skb)->frag_max_size MIGHT NOT BE SET
+	// icmp_send(first_frag, ICMP_PKT_REASM, ICMP_REASM_ERR, htonl(IPCB(skb)->frag_max_size));
 	return err;
 }
 
