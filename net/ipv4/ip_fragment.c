@@ -453,7 +453,6 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	}
 
 	ip_send_check(iph);
-	printk("ICMP_SEND: SUCCESS");
 	printk("MAX FRAG: %d\n", IPCB(skb)->frag_max_size);
 
 	/* Original datagram length in 32-bit words, up to 576 bytes (18 32-bit words) */
@@ -463,8 +462,7 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	/* skb has no dst, perform route lookup again */
 	err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
 					   iph->tos, skb->dev);
-
-	icmp_send(skb, ICMP_PKT_REASM, ICMP_REASM_SUCC, htonl(icmp_info));
+	icmp_send(skb, ICMP_PKT_REASM, 0, htonl(icmp_info));
 
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMOKS);
 	qp->q.rb_fragments = RB_ROOT;
@@ -480,10 +478,6 @@ out_oversize:
 	net_info_ratelimited("Oversized IP packet from %pI4\n", &qp->q.key.v4.saddr);
 out_fail:
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMFAILS);
-	printk("ICMP_SEND: FAILURE");
-	// WHAT SHOULD ORIG_DG_LEN BE HERE. WE WEREN'T ABLE TO REASSEMBLE???
-	// first_frag MAY BE UNINITIALIZED AND IPCB(skb)->frag_max_size MIGHT NOT BE SET
-	// icmp_send(first_frag, ICMP_PKT_REASM, ICMP_REASM_ERR, htonl(IPCB(skb)->frag_max_size));
 	return err;
 }
 

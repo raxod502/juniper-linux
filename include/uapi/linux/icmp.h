@@ -66,10 +66,6 @@
 #define ICMP_EXC_TTL		0	/* TTL count exceeded		*/
 #define ICMP_EXC_FRAGTIME	1	/* Fragment Reass time exceeded	*/
 
-/* Codes for PKT_REASM. */
-#define ICMP_REASM_SUCC		0	/* Reassembly successful	*/
-#define ICMP_REASM_ERR		1	/* Reassembly error			*/
-
 
 struct icmphdr {
   __u8		type;
