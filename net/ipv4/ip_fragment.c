@@ -455,8 +455,8 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	ip_send_check(iph);
 	printk("MAX FRAG: %d\n", IPCB(skb)->frag_max_size);
 
-	/* Original datagram length in 32-bit words, up to 576 bytes (18 32-bit words) */
-	orig_dg_len = len > 576 ? 18 : (len - 1) / 18 + 1;
+	/* Original datagram length in 32-bit words, up to 576 - 8 = 568 bytes (568 / 4 = 142 32-bit words) */
+	orig_dg_len = len > 568 ? 142 : (len - 1) / 4 + 1;
 	icmp_info = (orig_dg_len << 16) + IPCB(skb)->frag_max_size;
 
 	/* skb has no dst, perform route lookup again */

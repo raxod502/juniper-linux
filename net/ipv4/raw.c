@@ -230,9 +230,13 @@ static void raw_err(struct sock *sk, struct sk_buff *skb, u32 info)
 	int err = 0;
 	int harderr = 0;
 
-	if (type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED)
+	printk("raw_err");
+	if ( (type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED)
+		|| type == ICMP_PKT_REASM) {
+		printk("raw_err: UPDATE PMTU");
 		ipv4_sk_update_pmtu(skb, sk, info);
-	else if (type == ICMP_REDIRECT) {
+	} else if (type == ICMP_REDIRECT) {
+		printk("raw_err: type == ICMP_REDIRECT");
 		ipv4_sk_redirect(skb, sk);
 		return;
 	}
@@ -290,11 +294,13 @@ void raw_icmp_error(struct sk_buff *skb, int protocol, u32 info)
 	const struct iphdr *iph;
 	struct net *net;
 
+	printk("RAW_ICMP_ERROR");
 	hash = protocol & (RAW_HTABLE_SIZE - 1);
 
 	read_lock(&raw_v4_hashinfo.lock);
 	raw_sk = sk_head(&raw_v4_hashinfo.ht[hash]);
 	if (raw_sk) {
+		printk("RAW_SK");
 		int dif = skb->dev->ifindex;
 		int sdif = inet_sdif(skb);
 
@@ -304,6 +310,7 @@ void raw_icmp_error(struct sk_buff *skb, int protocol, u32 info)
 		while ((raw_sk = __raw_v4_lookup(net, raw_sk, protocol,
 						iph->daddr, iph->saddr,
 						dif, sdif)) != NULL) {
+			printk("WHILE LOOP");
 			raw_err(raw_sk, skb, info);
 			raw_sk = sk_next(raw_sk);
 			iph = (const struct iphdr *)skb->data;
