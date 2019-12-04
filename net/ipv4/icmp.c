@@ -652,6 +652,7 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 				goto out;
 		}
 	}
+
 	/* Needed by both icmp_global_allow and icmp_xmit_lock */
 	local_bh_disable();
 
@@ -670,6 +671,7 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	/*
 	 *	Construct source address and options.
 	 */
+
 	saddr = iph->daddr;
 	if (!(rt->rt_flags & RTCF_LOCAL)) {
 		struct net_device *dev = NULL;
@@ -698,6 +700,7 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	/*
 	 *	Prepare data for ICMP header.
 	 */
+
 	icmp_param.data.icmph.type	 = type;
 	icmp_param.data.icmph.code	 = code;
 	icmp_param.data.icmph.un.gateway = info;
@@ -712,7 +715,6 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 
 	rt = icmp_route_lookup(net, &fl4, skb_in, iph, saddr, tos, mark,
 			       type, code, &icmp_param);
-
 	if (IS_ERR(rt))
 		goto out_unlock;
 
@@ -721,6 +723,7 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 		goto ende;
 
 	/* RFC says return as much as we can without exceeding 576 bytes. */
+
 	room = dst_mtu(&rt->dst);
 	if (room > 576)
 		room = 576;
@@ -731,6 +734,7 @@ void __icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info,
 	if (icmp_param.data_len > room)
 		icmp_param.data_len = room;
 	icmp_param.head_len = sizeof(struct icmphdr);
+
 	icmp_push_reply(&icmp_param, &fl4, &ipc, &rt);
 ende:
 	ip_rt_put(rt);
@@ -786,7 +790,7 @@ static bool icmp_unreach(struct sk_buff *skb)
 	struct net *net;
 	u32 info = 0;
 
-	printk("ENTER UNREACH");
+	printk("JUNIPER-DEBUG: ENTER UNREACH\n");
 	net = dev_net(skb_dst(skb)->dev);
 
 	/*
@@ -851,9 +855,9 @@ static bool icmp_unreach(struct sk_buff *skb)
 			goto out;
 		break;
 	case ICMP_PKT_REASM:
-		printk("RECEIVE ICMP_PKT_REASM");
-		printk("MTU %d\n", ntohs(icmph->un.reasm.mtu));
-		printk("LEN %d\n", (icmph->un.reasm.orig_dg_len));
+		printk("JUNIPER-DEBUG: RECEIVE ICMP_PKT_REASM\n");
+		printk("JUNIPER-DEBUG: MTU %d\n", ntohs(icmph->un.reasm.mtu));
+		printk("JUNIPER-DEBUG: LEN %d\n", icmph->un.reasm.orig_dg_len);
 		info = ntohs(icmph->un.reasm.mtu);
 		break;
 	}
@@ -1039,7 +1043,7 @@ int icmp_rcv(struct sk_buff *skb)
 	 *	RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently
 	 *		  discarded.
 	 */
-	printk("ICMP RECV TYPE %d\n", icmph->type);
+	printk("JUNIPER-DEBUG: ICMP RECV TYPE %d\n", icmph->type);
 	if (icmph->type > NR_ICMP_TYPES)
 		goto error;
 

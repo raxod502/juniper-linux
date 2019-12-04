@@ -24,7 +24,7 @@
 #define ICMP_DEST_UNREACH	3	/* Destination Unreachable	*/
 #define ICMP_SOURCE_QUENCH	4	/* Source Quench		*/
 #define ICMP_REDIRECT		5	/* Redirect (change route)	*/
-#define ICMP_ECHO	        8	/* Echo Request			*/
+#define ICMP_ECHO		8	/* Echo Request			*/
 #define ICMP_TIME_EXCEEDED	11	/* Time Exceeded		*/
 #define ICMP_PARAMETERPROB	12	/* Parameter Problem		*/
 #define ICMP_TIMESTAMP		13	/* Timestamp Request		*/
@@ -33,8 +33,12 @@
 #define ICMP_INFO_REPLY		16	/* Information Reply		*/
 #define ICMP_ADDRESS		17	/* Address Mask Request		*/
 #define ICMP_ADDRESSREPLY	18	/* Address Mask Reply		*/
-#define ICMP_PKT_REASM		253 /* Report Packet Reassembly */
+#define ICMP_PKT_REASM		253	/* Report Packet Reassembly	*/
 #define NR_ICMP_TYPES		253
+/* JUNIPER-FIXME: increasing NR_ICMP_TYPES breaks a number of other
+ * places in the kernel which depend on every message type less than
+ * or equal to NR_ICMP_TYPES having a valid handler
+ */
 
 
 /* Codes for UNREACH. */

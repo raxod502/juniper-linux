@@ -258,8 +258,6 @@ int ping_init_sock(struct sock *sk)
 	kgid_t low, high;
 	int ret = 0;
 
-	printk("I MADE A CHANGE IN THE KERNEL: SENDING ICMP MESSAGE!");
-
 	if (sk->sk_family == AF_INET6)
 		sk->sk_ipv6only = 1;
 
