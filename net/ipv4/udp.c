@@ -709,7 +709,12 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
 	case ICMP_REDIRECT:
 		ipv4_sk_redirect(skb, sk);
 		goto out;
+	case ICMP_PKT_REASM:
+		printk("JUNIPER-DEBUG: udp.c: ipv4_sk_update_pmtu");
+		ipv4_sk_update_pmtu(skb, sk, info);
+		goto out;
 	}
+
 
 	/*
 	 *      RFC1122: OK.  Passes ICMP errors back to application, as per

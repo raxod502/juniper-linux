@@ -753,6 +753,9 @@ static void icmp_socket_deliver(struct sk_buff *skb, u32 info)
 	const struct net_protocol *ipprot;
 	int protocol = iph->protocol;
 
+	printk("JUNIPER-DEBUG: icmp_socket_deliver");
+	printk("JUNIPER-DEBUG: PROTOCOL: %d\n", protocol);
+
 	/* Checkin full IP header plus 8 bytes of protocol to
 	 * avoid additional coding at protocol handlers.
 	 */
@@ -764,8 +767,10 @@ static void icmp_socket_deliver(struct sk_buff *skb, u32 info)
 	raw_icmp_error(skb, protocol, info);
 
 	ipprot = rcu_dereference(inet_protos[protocol]);
-	if (ipprot && ipprot->err_handler)
+	if (ipprot && ipprot->err_handler) {
+		printk("JUNIPER-DEBUG: err_handler");
 		ipprot->err_handler(skb, info);
+	}
 }
 
 static bool icmp_tag_validation(int proto)
@@ -833,6 +838,7 @@ static bool icmp_unreach(struct sk_buff *skb)
 					goto out;
 				/* fall through */
 			case 0:
+				printk("JUNIPER-DEBUG: CASE 0\n");
 				info = ntohs(icmph->un.frag.mtu);
 			}
 			break;
@@ -1097,6 +1103,7 @@ int icmp_err(struct sk_buff *skb, u32 info)
 	int type = icmp_hdr(skb)->type;
 	int code = icmp_hdr(skb)->code;
 	struct net *net = dev_net(skb->dev);
+	printk("JUNIPER-DEBUG: icmp_err\n");
 
 	/*
 	 * Use ping_err to handle all icmp errors except those
@@ -1107,9 +1114,11 @@ int icmp_err(struct sk_buff *skb, u32 info)
 		return 0;
 	}
 
-	if (type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED)
+	if ((type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED)
+		|| type == ICMP_PKT_REASM) {
 		ipv4_update_pmtu(skb, net, info, 0, IPPROTO_ICMP);
-	else if (type == ICMP_REDIRECT)
+		printk("JUNIPER-DEBUG: ipv4_update_pmtu");
+	} else if (type == ICMP_REDIRECT)
 		ipv4_redirect(skb, net, 0, IPPROTO_ICMP);
 
 	return 0;

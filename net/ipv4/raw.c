@@ -233,10 +233,9 @@ static void raw_err(struct sock *sk, struct sk_buff *skb, u32 info)
 	printk("JUNIPER-DEBUG: raw_err\n");
 	if ((type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED)
 	    || type == ICMP_PKT_REASM) {
-		printk("JUNIPER-DEBUG: raw_err: UPDATE PMTU\n");
+		printk("JUNIPER-DEBUG: raw_err: ipv4_sk_update_pmtu");
 		ipv4_sk_update_pmtu(skb, sk, info);
 	} else if (type == ICMP_REDIRECT) {
-		printk("JUNIPER-DEBUG: raw_err: type == ICMP_REDIRECT\n");
 		ipv4_sk_redirect(skb, sk);
 		return;
 	}
@@ -294,11 +293,12 @@ void raw_icmp_error(struct sk_buff *skb, int protocol, u32 info)
 	const struct iphdr *iph;
 	struct net *net;
 
-	printk("JUNIPER-DEBUG: RAW_ICMP_ERROR\n");
+	printk("JUNIPER-DEBUG: raw_icmp_error\n");
 	hash = protocol & (RAW_HTABLE_SIZE - 1);
 
 	read_lock(&raw_v4_hashinfo.lock);
 	raw_sk = sk_head(&raw_v4_hashinfo.ht[hash]);
+
 	if (raw_sk) {
 		printk("JUNIPER-DEBUG: RAW_SK\n");
 		int dif = skb->dev->ifindex;
@@ -310,7 +310,6 @@ void raw_icmp_error(struct sk_buff *skb, int protocol, u32 info)
 		while ((raw_sk = __raw_v4_lookup(net, raw_sk, protocol,
 						iph->daddr, iph->saddr,
 						dif, sdif)) != NULL) {
-			printk("JUNIPER-DEBUG: WHILE LOOP\n");
 			raw_err(raw_sk, skb, info);
 			raw_sk = sk_next(raw_sk);
 			iph = (const struct iphdr *)skb->data;
