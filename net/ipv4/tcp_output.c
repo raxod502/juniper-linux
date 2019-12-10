@@ -1562,6 +1562,8 @@ unsigned int tcp_sync_mss(struct sock *sk, u32 pmtu)
 		mss_now = min(mss_now, tcp_mtu_to_mss(sk, icsk->icsk_mtup.search_low));
 	tp->mss_cache = mss_now;
 
+	printk("JUNIPER-DEBUG: new mss: %d", mss_now);
+
 	return mss_now;
 }
 EXPORT_SYMBOL(tcp_sync_mss);

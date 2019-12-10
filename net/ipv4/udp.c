@@ -654,9 +654,15 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
 	int err;
 	struct net *net = dev_net(skb->dev);
 
+	printk("JUNIPER-DEBUG: __udp4_lib_err");
+	printk("JUNIPER-DEBUG: type %d", type);
+
 	sk = __udp4_lib_lookup(net, iph->daddr, uh->dest,
 			       iph->saddr, uh->source, skb->dev->ifindex,
 			       inet_sdif(skb), udptable, NULL);
+
+	printk("JUNIPER-DEBUG: !sk");
+	// IF RECEIVER UDP PORT IS NOT OPEN, ENTERS THIS IF STATEMENT
 	if (!sk) {
 		/* No socket for error: try tunnels before discarding */
 		sk = ERR_PTR(-ENOENT);
@@ -674,6 +680,7 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
 
 		tunnel = true;
 	}
+	printk("JUNIPER-DEBUG: switch");
 
 	err = 0;
 	harderr = 0;
@@ -715,6 +722,7 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
 		goto out;
 	}
 
+	printk("JUNIPER-DEBUG: error!");
 
 	/*
 	 *      RFC1122: OK.  Passes ICMP errors back to application, as per
