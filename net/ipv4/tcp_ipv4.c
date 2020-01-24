@@ -508,17 +508,18 @@ int tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 			 * (SYN-ACKs send out by Linux are always <576bytes so
 			 * they should go through unfragmented).
 			 */
-			if (sk->sk_state == TCP_LISTEN)
-				goto out;
+			update_pmtu:
+				if (sk->sk_state == TCP_LISTEN)
+					goto out;
 
-			tp->mtu_info = info;
-			if (!sock_owned_by_user(sk)) {
-				tcp_v4_mtu_reduced(sk);
-			} else {
-				if (!test_and_set_bit(TCP_MTU_REDUCED_DEFERRED, &sk->sk_tsq_flags))
-					sock_hold(sk);
-			}
-			goto out;
+				tp->mtu_info = info;
+				if (!sock_owned_by_user(sk)) {
+					tcp_v4_mtu_reduced(sk);
+				} else {
+					if (!test_and_set_bit(TCP_MTU_REDUCED_DEFERRED, &sk->sk_tsq_flags))
+						sock_hold(sk);
+				}
+				goto out;
 		}
 
 		err = icmp_err_convert[code].errno;
@@ -561,6 +562,9 @@ int tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 	case ICMP_TIME_EXCEEDED:
 		err = EHOSTUNREACH;
 		break;
+	case ICMP_PKT_REASM:
+		printk("JUNIPER-DEBUG: case ICMP_PKT_REASM");
+		goto update_pmtu;
 	default:
 		goto out;
 	}

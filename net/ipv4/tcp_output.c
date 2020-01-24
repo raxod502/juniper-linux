@@ -1580,12 +1580,16 @@ unsigned int tcp_current_mss(struct sock *sk)
 	struct tcp_out_options opts;
 	struct tcp_md5sig_key *md5;
 
+	// printk("JUNIPER_DEBUG: tcp_current_mss");
+
 	mss_now = tp->mss_cache;
 
 	if (dst) {
 		u32 mtu = dst_mtu(dst);
-		if (mtu != inet_csk(sk)->icsk_pmtu_cookie)
+		if (mtu != inet_csk(sk)->icsk_pmtu_cookie) {
+			printk("JUNIPER_DEBUG: mtu from dst_mtu() in tcp_current_mss(): %d", mtu);
 			mss_now = tcp_sync_mss(sk, mtu);
+		}
 	}
 
 	header_len = tcp_established_options(sk, NULL, &opts, &md5) +
@@ -2094,6 +2098,8 @@ static int tcp_mtu_probe(struct sock *sk)
 		   tp->snd_cwnd < 11 ||
 		   tp->rx_opt.num_sacks || tp->rx_opt.dsack))
 		return -1;
+
+	// printk("JUNIPER_DEBUG: tcp_mtu_probe");
 
 	/* Use binary search for probe_size between tcp_mss_base,
 	 * and current mss_clamp. if (search_high - search_low)
@@ -3344,6 +3350,8 @@ static void tcp_connect_init(struct sock *sk)
 	struct tcp_sock *tp = tcp_sk(sk);
 	__u8 rcv_wscale;
 	u32 rcv_wnd;
+
+	printk("JUNIPER_DEBUG: tcp_connect_init");
 
 	/* We'll fix this up when we get a response from the other end.
 	 * See tcp_input.c:tcp_rcv_state_process case TCP_SYN_SENT.

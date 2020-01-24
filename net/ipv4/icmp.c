@@ -826,8 +826,10 @@ static bool icmp_unreach(struct sk_buff *skb)
 			 * values please see
 			 * Documentation/networking/ip-sysctl.txt
 			 */
+			printk("JUNIPER-DEBUG: ICMP_FRAG_NEEDED\n");
 			switch (net->ipv4.sysctl_ip_no_pmtu_disc) {
 			default:
+				printk("JUNIPER-DEBUG: fragmentation needed and DF set\n");
 				net_dbg_ratelimited("%pI4: fragmentation needed and DF set\n",
 						    &iph->daddr);
 				break;
