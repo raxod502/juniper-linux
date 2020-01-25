@@ -35,10 +35,6 @@
 #define ICMP_ADDRESSREPLY	18	/* Address Mask Reply		*/
 #define ICMP_PKT_REASM		253	/* Report Packet Reassembly	*/
 #define NR_ICMP_TYPES		253
-/* JUNIPER-FIXME: increasing NR_ICMP_TYPES breaks a number of other
- * places in the kernel which depend on every message type less than
- * or equal to NR_ICMP_TYPES having a valid handler
- */
 
 
 /* Codes for UNREACH. */

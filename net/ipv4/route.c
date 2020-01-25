@@ -1018,7 +1018,7 @@ static void __ip_rt_update_pmtu(struct rtable *rt, struct flowi4 *fl4, u32 mtu)
 
 	if (ip_mtu_locked(dst))
 		return;
-	
+
 	if (old_mtu < mtu)
 		return;
 
@@ -1082,7 +1082,6 @@ static void __ipv4_sk_update_pmtu(struct sk_buff *skb, struct sock *sk, u32 mtu)
 
 	rt = __ip_route_output_key(sock_net(sk), &fl4);
 	if (!IS_ERR(rt)) {
-		printk("JUNIPER-DEBUG: __ip_rt_update_pmtu");
 		__ip_rt_update_pmtu(rt, &fl4, mtu);
 		ip_rt_put(rt);
 	}
@@ -1099,15 +1098,13 @@ void ipv4_sk_update_pmtu(struct sk_buff *skb, struct sock *sk, u32 mtu)
 
 	bh_lock_sock(sk);
 
-	printk("JUNIPER-DEBUG: ip_sk_accept_pmtu");
 	if (!ip_sk_accept_pmtu(sk))
 		goto out;
 
-	
+
 	odst = sk_dst_get(sk);
 
 	if (sock_owned_by_user(sk) || !odst) {
-		printk("JUNIPER-DEBUG: __ipv4_sk_update_pmtu");
 		__ipv4_sk_update_pmtu(skb, sk, mtu);
 		goto out;
 	}
@@ -1123,13 +1120,7 @@ void ipv4_sk_update_pmtu(struct sk_buff *skb, struct sock *sk, u32 mtu)
 		new = true;
 	}
 
-	printk("JUNIPER-DEBUG: old pmtu: %u", rt->rt_pmtu);
-	printk("JUNIPER-DEBUG: old mtu: %u", ipv4_mtu(&rt->dst));
-	printk("JUNIPER-DEBUG: __ip_rt_update_pmtu");
 	__ip_rt_update_pmtu((struct rtable *) xfrm_dst_path(&rt->dst), &fl4, mtu);
-
-	printk("JUNIPER-DEBUG: new pmtu: %u", rt->rt_pmtu);
-	printk("JUNIPER-DEBUG: new mtu: %u", ipv4_mtu(&rt->dst));
 
 	if (!dst_check(&rt->dst, 0)) {
 		if (new)

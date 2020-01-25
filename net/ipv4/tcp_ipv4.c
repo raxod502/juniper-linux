@@ -563,7 +563,6 @@ int tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 		err = EHOSTUNREACH;
 		break;
 	case ICMP_PKT_REASM:
-		printk("JUNIPER-DEBUG: case ICMP_PKT_REASM");
 		goto update_pmtu;
 	default:
 		goto out;

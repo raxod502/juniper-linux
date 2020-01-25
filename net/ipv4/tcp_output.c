@@ -1562,8 +1562,6 @@ unsigned int tcp_sync_mss(struct sock *sk, u32 pmtu)
 		mss_now = min(mss_now, tcp_mtu_to_mss(sk, icsk->icsk_mtup.search_low));
 	tp->mss_cache = mss_now;
 
-	printk("JUNIPER-DEBUG: new mss: %d", mss_now);
-
 	return mss_now;
 }
 EXPORT_SYMBOL(tcp_sync_mss);
@@ -1584,9 +1582,8 @@ unsigned int tcp_current_mss(struct sock *sk)
 
 	if (dst) {
 		u32 mtu = dst_mtu(dst);
-		if (mtu != inet_csk(sk)->icsk_pmtu_cookie) {
+		if (mtu != inet_csk(sk)->icsk_pmtu_cookie)
 			mss_now = tcp_sync_mss(sk, mtu);
-		}
 	}
 
 	header_len = tcp_established_options(sk, NULL, &opts, &md5) +
@@ -3345,8 +3342,6 @@ static void tcp_connect_init(struct sock *sk)
 	struct tcp_sock *tp = tcp_sk(sk);
 	__u8 rcv_wscale;
 	u32 rcv_wnd;
-
-	printk("JUNIPER_DEBUG: tcp_connect_init");
 
 	/* We'll fix this up when we get a response from the other end.
 	 * See tcp_input.c:tcp_rcv_state_process case TCP_SYN_SENT.

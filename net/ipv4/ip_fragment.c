@@ -407,8 +407,6 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	u_int16_t orig_dg_len;
 	u_int32_t icmp_info;
 
-	printk("JUNIPER-DEBUG: REASSEMBLING PACKET\n");
-
 	ipq_kill(qp);
 
 	ecn = ip_frag_ecn_table[qp->ecn];
@@ -452,7 +450,6 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	}
 
 	ip_send_check(iph);
-	printk("JUNIPER-DEBUG: MAX FRAG: %d\n", IPCB(skb)->frag_max_size);
 
 	/* Original datagram length in 32-bit words,
 	 * up to 576 - 8 = 568 bytes (568 / 4 = 142 32-bit words) */

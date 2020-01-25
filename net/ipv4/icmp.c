@@ -753,9 +753,6 @@ static void icmp_socket_deliver(struct sk_buff *skb, u32 info)
 	const struct net_protocol *ipprot;
 	int protocol = iph->protocol;
 
-	printk("JUNIPER-DEBUG: icmp_socket_deliver");
-	printk("JUNIPER-DEBUG: PROTOCOL: %d\n", protocol);
-
 	/* Checkin full IP header plus 8 bytes of protocol to
 	 * avoid additional coding at protocol handlers.
 	 */
@@ -767,9 +764,8 @@ static void icmp_socket_deliver(struct sk_buff *skb, u32 info)
 	raw_icmp_error(skb, protocol, info);
 
 	ipprot = rcu_dereference(inet_protos[protocol]);
-	if (ipprot && ipprot->err_handler) {
+	if (ipprot && ipprot->err_handler)
 		ipprot->err_handler(skb, info);
-	}
 }
 
 static bool icmp_tag_validation(int proto)
@@ -794,7 +790,6 @@ static bool icmp_unreach(struct sk_buff *skb)
 	struct net *net;
 	u32 info = 0;
 
-	printk("JUNIPER-DEBUG: ENTER UNREACH\n");
 	net = dev_net(skb_dst(skb)->dev);
 
 	/*
@@ -825,7 +820,6 @@ static bool icmp_unreach(struct sk_buff *skb)
 			 * values please see
 			 * Documentation/networking/ip-sysctl.txt
 			 */
-			printk("JUNIPER-DEBUG: ICMP_FRAG_NEEDED\n");
 			switch (net->ipv4.sysctl_ip_no_pmtu_disc) {
 			default:
 				net_dbg_ratelimited("%pI4: fragmentation needed and DF set\n",
@@ -860,9 +854,6 @@ static bool icmp_unreach(struct sk_buff *skb)
 			goto out;
 		break;
 	case ICMP_PKT_REASM:
-		printk("JUNIPER-DEBUG: RECEIVE ICMP_PKT_REASM\n");
-		printk("JUNIPER-DEBUG: MTU %d\n", ntohs(icmph->un.reasm.mtu));
-		printk("JUNIPER-DEBUG: LEN %d\n", icmph->un.reasm.orig_dg_len);
 		info = ntohs(icmph->un.reasm.mtu);
 		break;
 	}
@@ -1048,7 +1039,6 @@ int icmp_rcv(struct sk_buff *skb)
 	 *	RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently
 	 *		  discarded.
 	 */
-	printk("JUNIPER-DEBUG: ICMP RECV TYPE %d\n", icmph->type);
 	if (icmph->type > NR_ICMP_TYPES)
 		goto error;
 
@@ -1102,7 +1092,6 @@ int icmp_err(struct sk_buff *skb, u32 info)
 	int type = icmp_hdr(skb)->type;
 	int code = icmp_hdr(skb)->code;
 	struct net *net = dev_net(skb->dev);
-	printk("JUNIPER-DEBUG: icmp_err\n");
 
 	/*
 	 * Use ping_err to handle all icmp errors except those
@@ -1113,11 +1102,10 @@ int icmp_err(struct sk_buff *skb, u32 info)
 		return 0;
 	}
 
-	if ((type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED)
-		|| type == ICMP_PKT_REASM) {
+	if ((type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED) ||
+	    type == ICMP_PKT_REASM)
 		ipv4_update_pmtu(skb, net, info, 0, IPPROTO_ICMP);
-		printk("JUNIPER-DEBUG: ipv4_update_pmtu");
-	} else if (type == ICMP_REDIRECT)
+	else if (type == ICMP_REDIRECT)
 		ipv4_redirect(skb, net, 0, IPPROTO_ICMP);
 
 	return 0;
