@@ -768,7 +768,6 @@ static void icmp_socket_deliver(struct sk_buff *skb, u32 info)
 
 	ipprot = rcu_dereference(inet_protos[protocol]);
 	if (ipprot && ipprot->err_handler) {
-		printk("JUNIPER-DEBUG: err_handler");
 		ipprot->err_handler(skb, info);
 	}
 }
@@ -829,7 +828,6 @@ static bool icmp_unreach(struct sk_buff *skb)
 			printk("JUNIPER-DEBUG: ICMP_FRAG_NEEDED\n");
 			switch (net->ipv4.sysctl_ip_no_pmtu_disc) {
 			default:
-				printk("JUNIPER-DEBUG: fragmentation needed and DF set\n");
 				net_dbg_ratelimited("%pI4: fragmentation needed and DF set\n",
 						    &iph->daddr);
 				break;
@@ -840,7 +838,6 @@ static bool icmp_unreach(struct sk_buff *skb)
 					goto out;
 				/* fall through */
 			case 0:
-				printk("JUNIPER-DEBUG: CASE 0\n");
 				info = ntohs(icmph->un.frag.mtu);
 			}
 			break;

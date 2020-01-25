@@ -1580,14 +1580,11 @@ unsigned int tcp_current_mss(struct sock *sk)
 	struct tcp_out_options opts;
 	struct tcp_md5sig_key *md5;
 
-	// printk("JUNIPER_DEBUG: tcp_current_mss");
-
 	mss_now = tp->mss_cache;
 
 	if (dst) {
 		u32 mtu = dst_mtu(dst);
 		if (mtu != inet_csk(sk)->icsk_pmtu_cookie) {
-			printk("JUNIPER_DEBUG: mtu from dst_mtu() in tcp_current_mss(): %d", mtu);
 			mss_now = tcp_sync_mss(sk, mtu);
 		}
 	}
@@ -2098,8 +2095,6 @@ static int tcp_mtu_probe(struct sock *sk)
 		   tp->snd_cwnd < 11 ||
 		   tp->rx_opt.num_sacks || tp->rx_opt.dsack))
 		return -1;
-
-	// printk("JUNIPER_DEBUG: tcp_mtu_probe");
 
 	/* Use binary search for probe_size between tcp_mss_base,
 	 * and current mss_clamp. if (search_high - search_low)
