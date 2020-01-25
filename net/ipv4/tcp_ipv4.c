@@ -436,8 +436,6 @@ int tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 	int err;
 	struct net *net = dev_net(icmp_skb->dev);
 
-	printk("JUNIPER-DEBUG: tcp_v4_err");
-
 	sk = __inet_lookup_established(net, &tcp_hashinfo, iph->daddr,
 				       th->dest, iph->saddr, ntohs(th->source),
 				       inet_iif(icmp_skb), 0);

@@ -295,7 +295,6 @@ void raw_icmp_error(struct sk_buff *skb, int protocol, u32 info)
 
 	read_lock(&raw_v4_hashinfo.lock);
 	raw_sk = sk_head(&raw_v4_hashinfo.ht[hash]);
-
 	if (raw_sk) {
 		int dif = skb->dev->ifindex;
 		int sdif = inet_sdif(skb);
