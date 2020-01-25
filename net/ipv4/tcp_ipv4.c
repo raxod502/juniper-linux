@@ -498,26 +498,27 @@ int tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 		err = EPROTO;
 		break;
 	case ICMP_DEST_UNREACH:
-		if (code > NR_ICMP_UNREACH)
+	case ICMP_PKT_REASM:
+		if (type == ICMP_DEST_UNREACH && code > NR_ICMP_UNREACH)
 			goto out;
 
-		if (code == ICMP_FRAG_NEEDED) { /* PMTU discovery (RFC1191) */
+		/* PMTU discovery (RFC1191) */
+		if (type == ICMP_PKT_REASM || code == ICMP_FRAG_NEEDED) {
 			/* We are not interested in TCP_LISTEN and open_requests
 			 * (SYN-ACKs send out by Linux are always <576bytes so
 			 * they should go through unfragmented).
 			 */
-			update_pmtu:
-				if (sk->sk_state == TCP_LISTEN)
-					goto out;
-
-				tp->mtu_info = info;
-				if (!sock_owned_by_user(sk)) {
-					tcp_v4_mtu_reduced(sk);
-				} else {
-					if (!test_and_set_bit(TCP_MTU_REDUCED_DEFERRED, &sk->sk_tsq_flags))
-						sock_hold(sk);
-				}
+			if (sk->sk_state == TCP_LISTEN)
 				goto out;
+
+			tp->mtu_info = info;
+			if (!sock_owned_by_user(sk)) {
+				tcp_v4_mtu_reduced(sk);
+			} else {
+				if (!test_and_set_bit(TCP_MTU_REDUCED_DEFERRED, &sk->sk_tsq_flags))
+					sock_hold(sk);
+			}
+			goto out;
 		}
 
 		err = icmp_err_convert[code].errno;
@@ -560,8 +561,6 @@ int tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 	case ICMP_TIME_EXCEEDED:
 		err = EHOSTUNREACH;
 		break;
-	case ICMP_PKT_REASM:
-		goto update_pmtu;
 	default:
 		goto out;
 	}
