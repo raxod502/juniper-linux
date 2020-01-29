@@ -654,20 +654,33 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
 	int err;
 	struct net *net = dev_net(skb->dev);
 
+	if (type == ICMP_PKT_REASM) {
+		printk("JUNIPER-DEBUG: __udp4_lib_err");
+		printk("JUNIPER-DEBUG: type %d", type);
+	}
+	
 	sk = __udp4_lib_lookup(net, iph->daddr, uh->dest,
 			       iph->saddr, uh->source, skb->dev->ifindex,
 			       inet_sdif(skb), udptable, NULL);
+
+	// printk("JUNIPER-DEBUG: !sk");
 	if (!sk) {
 		/* No socket for error: try tunnels before discarding */
 		sk = ERR_PTR(-ENOENT);
+		// printk("JUNIPER-DEBUG: udp_encap_needed_key");
 		if (static_branch_unlikely(&udp_encap_needed_key)) {
 			sk = __udp4_lib_err_encap(net, iph, uh, udptable, skb,
 						  info);
-			if (!sk)
+			// printk("JUNIPER-DEBUG: !sk -> return 0");
+			if (!sk) {
+				// printk("JUNIPER-DEBUG: returning 0");
 				return 0;
+			}
 		}
 
+		// printk("JUNIPER-DEBUG: IS_ERR(sk)");
 		if (IS_ERR(sk)) {
+			// printk("JUNIPER-DEBUG: returning PTR_ERR(sk)");
 			__ICMP_INC_STATS(net, ICMP_MIB_INERRORS);
 			return PTR_ERR(sk);
 		}
@@ -710,6 +723,7 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
 		ipv4_sk_redirect(skb, sk);
 		goto out;
 	case ICMP_PKT_REASM:
+		printk("JUNIPER-DEBUG: udp.c: ipv4_sk_update_pmtu with mtu %d", info);
 		ipv4_sk_update_pmtu(skb, sk, info);
 		goto out;
 	}

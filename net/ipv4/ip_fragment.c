@@ -459,6 +459,8 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	/* skb has no dst, perform route lookup again */
 	err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
 				   iph->tos, skb->dev);
+
+	printk("JUNIPER-DEBUG: Sending ICMP_PKT_REASM: mtu = %d", IPCB(skb)->frag_max_size);
 	icmp_send(skb, ICMP_PKT_REASM, 0, htonl(icmp_info));
 
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMOKS);

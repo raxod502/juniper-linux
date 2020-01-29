@@ -436,6 +436,11 @@ int tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 	int err;
 	struct net *net = dev_net(icmp_skb->dev);
 
+	if (type == ICMP_PKT_REASM) {
+		printk("JUNIPER-DEBUG: __udp4_lib_err");
+		printk("JUNIPER-DEBUG: type %d", type);
+	}
+
 	sk = __inet_lookup_established(net, &tcp_hashinfo, iph->daddr,
 				       th->dest, iph->saddr, ntohs(th->source),
 				       inet_iif(icmp_skb), 0);
@@ -512,7 +517,9 @@ int tcp_v4_err(struct sk_buff *icmp_skb, u32 info)
 				goto out;
 
 			tp->mtu_info = info;
+			printk("JUNIPER-DEBUG: tcp_v4_err(): mtu = %d", info);
 			if (!sock_owned_by_user(sk)) {
+				printk("JUNIPER-DEBUG: tcp_v4_err(): tcp_v4_mtu_reduced()");
 				tcp_v4_mtu_reduced(sk);
 			} else {
 				if (!test_and_set_bit(TCP_MTU_REDUCED_DEFERRED, &sk->sk_tsq_flags))

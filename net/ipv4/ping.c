@@ -485,6 +485,9 @@ void ping_err(struct sk_buff *skb, int offset, u32 info)
 	int harderr;
 	int err;
 
+	printk("JUNIPER-DEBUG: ping_err()");
+	printk("JUNIPER-DEBUG: type %d", type);
+
 	if (skb->protocol == htons(ETH_P_IP)) {
 		family = AF_INET;
 		type = icmp_hdr(skb)->type;
@@ -536,7 +539,9 @@ void ping_err(struct sk_buff *skb, int offset, u32 info)
 			harderr = 1;
 			break;
 		case ICMP_DEST_UNREACH:
-			if (code == ICMP_FRAG_NEEDED) { /* Path MTU discovery */
+		case ICMP_PKT_REASM:
+			if (type == ICMP_PKT_REASM || code == ICMP_FRAG_NEEDED) { /* Path MTU discovery */
+				printk("JUNIPER-DEBUG: ping_err(): ipv4_update_pmtu with mtu %d", info);
 				ipv4_sk_update_pmtu(skb, sk, info);
 				if (inet_sock->pmtudisc != IP_PMTUDISC_DONT) {
 					err = EMSGSIZE;
@@ -567,12 +572,14 @@ void ping_err(struct sk_buff *skb, int offset, u32 info)
 	 *      RFC1122: OK.  Passes ICMP errors back to application, as per
 	 *	4.1.3.3.
 	 */
+	printk("JUNIPER-DEBUG: ping_err(): RFC1122: OK");
 	if ((family == AF_INET && !inet_sock->recverr) ||
 	    (family == AF_INET6 && !inet6_sk(sk)->recverr)) {
 		if (!harderr || sk->sk_state != TCP_ESTABLISHED)
 			goto out;
 	} else {
 		if (family == AF_INET) {
+			printk("JUNIPER-DEBUG: ping_err(): ip_icmp_error()");
 			ip_icmp_error(sk, skb, err, 0 /* no remote port */,
 				      info, (u8 *)icmph);
 #if IS_ENABLED(CONFIG_IPV6)
