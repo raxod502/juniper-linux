@@ -658,7 +658,7 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
 		printk("JUNIPER-DEBUG: __udp4_lib_err");
 		printk("JUNIPER-DEBUG: type %d", type);
 	}
-	
+
 	sk = __udp4_lib_lookup(net, iph->daddr, uh->dest,
 			       iph->saddr, uh->source, skb->dev->ifindex,
 			       inet_sdif(skb), udptable, NULL);
@@ -673,14 +673,14 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
 						  info);
 			// printk("JUNIPER-DEBUG: !sk -> return 0");
 			if (!sk) {
-				// printk("JUNIPER-DEBUG: returning 0");
+				printk("JUNIPER-DEBUG: returning 0");
 				return 0;
 			}
 		}
 
 		// printk("JUNIPER-DEBUG: IS_ERR(sk)");
 		if (IS_ERR(sk)) {
-			// printk("JUNIPER-DEBUG: returning PTR_ERR(sk)");
+			printk("JUNIPER-DEBUG: returning PTR_ERR(sk)");
 			__ICMP_INC_STATS(net, ICMP_MIB_INERRORS);
 			return PTR_ERR(sk);
 		}

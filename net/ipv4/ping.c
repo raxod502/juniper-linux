@@ -486,7 +486,6 @@ void ping_err(struct sk_buff *skb, int offset, u32 info)
 	int err;
 
 	printk("JUNIPER-DEBUG: ping_err()");
-	printk("JUNIPER-DEBUG: type %d", type);
 
 	if (skb->protocol == htons(ETH_P_IP)) {
 		family = AF_INET;
@@ -501,6 +500,8 @@ void ping_err(struct sk_buff *skb, int offset, u32 info)
 	} else {
 		BUG();
 	}
+
+	printk("JUNIPER-DEBUG: type %d", type);
 
 	/* We assume the packet has already been checked by icmp_unreach */
 
