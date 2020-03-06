@@ -537,7 +537,8 @@ void ping_err(struct sk_buff *skb, int offset, u32 info)
 			break;
 		case ICMP_DEST_UNREACH:
 		case ICMP_PKT_REASM:
-			if (type == ICMP_PKT_REASM || code == ICMP_FRAG_NEEDED) { /* Path MTU discovery */
+			/* Path MTU discovery */
+			if (type == ICMP_PKT_REASM || code == ICMP_FRAG_NEEDED) {
 				ipv4_sk_update_pmtu(skb, sk, info);
 				if (inet_sock->pmtudisc != IP_PMTUDISC_DONT) {
 					err = EMSGSIZE;
