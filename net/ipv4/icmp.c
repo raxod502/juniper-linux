@@ -763,7 +763,6 @@ static void icmp_socket_deliver(struct sk_buff *skb, u32 info)
 
 	raw_icmp_error(skb, protocol, info);
 
-	printk("JUNIPER-DEBUG: icmp_socket_deliver: proto = %d", protocol);
 	ipprot = rcu_dereference(inet_protos[protocol]);
 	if (ipprot && ipprot->err_handler)
 		ipprot->err_handler(skb, info);
@@ -1094,12 +1093,6 @@ int icmp_err(struct sk_buff *skb, u32 info)
 	int code = icmp_hdr(skb)->code;
 	struct net *net = dev_net(skb->dev);
 
-	if (type == ICMP_PKT_REASM) {
-		printk("JUNIPER-DEBUG: icmp_err()");
-		printk("JUNIPER-DEBUG: type %d", type);
-		printk("JUNIPER-DEBUG: icmph->type %d", icmph->type);
-	}
-
 	/*
 	 * Use ping_err to handle all icmp errors except those
 	 * triggered by ICMP_ECHOREPLY which sent from kernel.
@@ -1110,16 +1103,10 @@ int icmp_err(struct sk_buff *skb, u32 info)
 	}
 
 	if ((type == ICMP_DEST_UNREACH && code == ICMP_FRAG_NEEDED) ||
-	    type == ICMP_PKT_REASM) {
-		printk("JUNIPER-DEBUG: icmp_err(): ipv4_update_pmtu with mtu %d", info);
+	    type == ICMP_PKT_REASM)
 		ipv4_update_pmtu(skb, net, info, 0, IPPROTO_ICMP);
-	}
-	else if (type == ICMP_REDIRECT) {
-		printk("JUNIPER-DEBUG: icmp_err(): ipv4_redirect");
+	else if (type == ICMP_REDIRECT)
 		ipv4_redirect(skb, net, 0, IPPROTO_ICMP);
-	}
-
-	printk("JUNIPER-DEBUG: icmp_err(): return");
 
 	return 0;
 }

@@ -460,11 +460,8 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *skb,
 	err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
 				   iph->tos, skb->dev);
 
-	printk("JUNIPER-DEBUG: protocol = %d", iph->protocol);
-	if (iph->protocol != IPPROTO_ICMP) {
-		printk("JUNIPER-DEBUG: Sending ICMP_PKT_REASM: mtu = %d", IPCB(skb)->frag_max_size);
+	if (iph->protocol != IPPROTO_ICMP)
 		icmp_send(skb, ICMP_PKT_REASM, 0, htonl(icmp_info));
-	}
 
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMOKS);
 	qp->q.rb_fragments = RB_ROOT;
